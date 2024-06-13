@@ -3,6 +3,16 @@ import pandas as pd
 import joblib
 from sklearn.metrics import r2_score
 
+# Load the dataset to define X and y
+@st.cache
+def load_data():
+    df = pd.read_csv('led.csv')
+    X = df.drop(columns=['Lifeexpectancy'])
+    y = df['Lifeexpectancy']
+    return X, y
+
+X, y = load_data()
+
 # Load the models
 lr_model = joblib.load('lr_model.pkl')
 rf_model_important = joblib.load('rf_model_important.pkl')
@@ -38,12 +48,13 @@ input_data = pd.DataFrame({
 # Fill in missing columns with default values
 for col in X.columns:
     if col not in input_data:
-        input_data[col] = [df[col].mode()[0]] if df[col].dtype == 'object' else [df[col].mean()]
+        input_data[col] = [X[col].mode()[0]] if X[col].dtype == 'object' else [X[col].mean()]
 
+categorical_features = ['Country', 'Status']
 input_data[categorical_features] = encoder.transform(input_data[categorical_features])
 
 # Predict using the chosen model
-if r2_score(y_test, y_pred_rf) > r2_score(y_important_test, y_pred_lr):
+if r2_score(y, rf_model_important.predict(X[important_rf_features])) > r2_score(y, lr_model.predict(X[important_features])):
     prediction = predict_life_expectancy(rf_model_important, input_data, important_rf_features)
     chosen_model = "Random Forest (Important Features)"
 else:
