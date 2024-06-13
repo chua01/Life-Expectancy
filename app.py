@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from sklearn.externals import joblib
+import joblib
+from sklearn.metrics import r2_score
 
 # Load the models
 lr_model = joblib.load('lr_model.pkl')
